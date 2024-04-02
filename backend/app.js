@@ -26,7 +26,7 @@ const app = express();
 app.use(express.static('public'));
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://frontend-dot-cloud-419006.lm.r.appspot.com/'],
+  origin: ['http://localhost:3000', 'https://frontend-dot-cloud-419006.lm.r.appspot.com'],
   optionsSuccessStatus: 200
 }));
 
