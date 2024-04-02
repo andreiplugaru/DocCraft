@@ -1,3 +1,4 @@
+import { FILE_UPLOAD_URL } from '../config';
 import './Taskbar.css';
 
 import React, { useState } from 'react';
@@ -16,7 +17,7 @@ export default function Taskbar() {
 
             console.log('Uploading file:', selectedFile.name);
 
-            fetch('http://localhost:8083/upload', {
+            fetch(FILE_UPLOAD_URL, {
               method: 'POST',
               body: formData
             })
@@ -27,6 +28,8 @@ export default function Taskbar() {
             alert('Please select a file');
           }
     }
+
+    console.log(document.location.href);
 
     return (
         <div className="taskbar">

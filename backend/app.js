@@ -3,6 +3,9 @@
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
+const os = require('os');
+
+const HOSTNAME = os.hostname();
 
 const { Storage } = require('@google-cloud/storage');
 
@@ -22,9 +25,8 @@ const app = express();
 
 app.use(express.static('public'));
 
-
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'https://frontend-dot-cloud-419006.lm.r.appspot.com/'],
   optionsSuccessStatus: 200
 }));
 
@@ -43,7 +45,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 const PORT = parseInt(process.env.PORT) || 8083;
 app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
+  console.log(`App listening on port ${PORT}, ${HOSTNAME}`);
   console.log('Press Ctrl+C to quit.');
 });
 
