@@ -1,0 +1,7 @@
+.taskbar {
+    color: white;
+    background-color: black;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+}
