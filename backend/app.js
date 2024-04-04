@@ -9,6 +9,9 @@ const os = require('os');
 const HOSTNAME = os.hostname();
 
 const { Storage } = require('@google-cloud/storage');
+const { PrismaClient } =  require('@prisma/client')
+const verifyToken = require('./middleware/authMiddleware')
+const prisma = new PrismaClient()
 
 const storage = new Storage();
 
@@ -37,17 +40,29 @@ app.get('/', (req, res) => {
   res.status(200).send('Hello, world!').end();
 });
 
-app.post('/upload', upload.single('file'), (req, res) => {
+app.post('/upload', upload.single('file'),  (req, res) => {
+  verifyToken(req, res, async (req, res) => {
   const bucketName = 'documents_database';
   const destFileName = req.file.originalname;
   const contents = req.file.buffer;
+  await prisma.files.create({
+    data:{
+      file_name:req.file.originalname,
+      file_size: req.file.size
+    }
+  });
   uploadFromMemory(bucketName, destFileName, contents).catch(console.error);
   console.log(req.file);
   res.status(200).json("ok");
-});
+})});
 
 app.post('/login', (req, res) => {
   console.log(req.body);
+});
+
+app.get("/files", async (req, res) => {
+  const allFiles = await prisma.files.findMany()
+  res.status(200).json(allFiles);
 });
 
 const PORT = parseInt(process.env.PORT) || 8083;

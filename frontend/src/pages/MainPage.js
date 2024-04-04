@@ -6,8 +6,9 @@ import { LOGIN_URL } from '../config';
 
 export default function MainPage() {
     const responseMessage = (response) => {
+        console.log(response);
         const credentials = jwtDecode(response.credential);
-
+        localStorage.setItem("token", response.credential)
         if (!credentials.email_verified) {
             console.error('Email not verified!');
             return;

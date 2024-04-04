@@ -19,7 +19,8 @@ export default function Taskbar() {
 
             fetch(FILE_UPLOAD_URL, {
               method: 'POST',
-              body: formData
+              body: formData,
+              headers: {"Authorization":localStorage.getItem("token")}
             })
             .then(response => response.json())
             .then(data => console.log(data))
