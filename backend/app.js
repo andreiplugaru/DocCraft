@@ -3,6 +3,7 @@
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const os = require('os');
 
 const HOSTNAME = os.hostname();
@@ -30,6 +31,8 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
+app.use(bodyParser.json());
+
 app.get('/', (req, res) => {
   res.status(200).send('Hello, world!').end();
 });
@@ -41,6 +44,10 @@ app.post('/upload', upload.single('file'), (req, res) => {
   uploadFromMemory(bucketName, destFileName, contents).catch(console.error);
   console.log(req.file);
   res.status(200).json("ok");
+});
+
+app.post('/login', (req, res) => {
+  console.log(req.body);
 });
 
 const PORT = parseInt(process.env.PORT) || 8083;
