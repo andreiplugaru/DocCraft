@@ -4,16 +4,17 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const os = require('os');
 
 const HOSTNAME = os.hostname();
 
 const { Storage } = require('@google-cloud/storage');
 const bucketName = "documents_database"
-const { PrismaClient } =  require('@prisma/client')
-const verifyToken = require('./middleware/authMiddleware')
-const prisma = new PrismaClient()
-
+const { PrismaClient, Prisma } =  require('@prisma/client')
+const verifyToken = require('./middleware/authMiddleware');
+const { jwtDecode } = require('jwt-decode');
+const prisma = new PrismaClient();
 const storage = new Storage();
 
 async function uploadFromMemory(bucketName, destFileName, contents) {
@@ -32,8 +33,11 @@ app.use(express.static('public'));
 
 app.use(cors({
   origin: ['http://localhost:3000', 'https://frontend-dot-cloud-419006.lm.r.appspot.com'],
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  credentials: true
 }));
+
+app.use(cookieParser());
 
 app.use(bodyParser.json());
 
@@ -53,6 +57,18 @@ async function fetchFile(fileName) {
     `gs://${bucketName}/${fileName} contents sent to frontend.`
   );
 }
+
+
+app.post('/login', async (req, res) => {
+  const { name, email } = jwtDecode(req.cookies.authToken);
+  const date = new Date();
+
+  await prisma.users.findFirst();
+  // await prisma.users.create({data: {email, username: name}});
+  console.log(date.toString());
+
+  res.status(200).json("ok");
+});
 
 
 app.post('/upload', upload.single('file'),  (req, res) => {
@@ -96,6 +112,10 @@ app.get('/contents/:filename', async (req, res) => {
     return res.status(400).send('Filename is required.');
   }
 
+  const { email } = jwtDecode(req.cookies.authToken);
+
+  // prisma.files.findFirst({where: {email: email, file_name}})
+
   const file = storage.bucket(bucketName).file(filename);
 
     try {
@@ -115,7 +135,15 @@ app.get('/contents/:filename', async (req, res) => {
 
 app.post('/save/:filename', express.json(), async (req, res) => {
   const { filename } = req.params;
-  const { content } = req.body;
+  const { content, email } = req.body;
+
+  const credentials = jwtDecode(req.cookies.authToken);
+
+
+  if (!email) {
+    return res.status(400).send('Email is required.');
+  }
+
   if (!filename) {
     return res.status(400).send('Filename is required.');
   }

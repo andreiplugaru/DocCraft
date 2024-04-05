@@ -1,7 +1,9 @@
 import './MainPage.css';
 import '../components/Taskbar.css';
 import { GoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 import { parseCredentialsJWT } from '../utils';
+import { LOGIN_URL } from '../config';
 
 export default function MainPage() {
     const responseMessage = (response) => {
@@ -12,8 +14,9 @@ export default function MainPage() {
             return;
         }
 
-        document.cookie = 'authToken=' + response.credential;
+        axios.post(LOGIN_URL, null, {withCredentials: true}).catch(error => console.error('Error:', error));
 
+        document.cookie = 'authToken=' + response.credential;
         document.location.href = '/home';
     }
 
