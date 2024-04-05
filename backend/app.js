@@ -61,12 +61,7 @@ async function fetchFile(fileName) {
 
 app.post('/login', async (req, res) => {
   const { name, email } = jwtDecode(req.cookies.authToken);
-  const date = new Date();
-
-  await prisma.users.findFirst();
-  // await prisma.users.create({data: {email, username: name}});
-  console.log(date.toString());
-
+  await prisma.users.create({data: {email, username: name}});
   res.status(200).json("ok");
 });
 

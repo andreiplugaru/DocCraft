@@ -1,4 +1,4 @@
-const PRODUCTION = document.location.href.endsWith('appspot.com/');
+const PRODUCTION = document.location.href.includes('appspot.com');
 
 const BACKEND = PRODUCTION ? 'https://cloud-419006.lm.r.appspot.com' : 'http://localhost:8083';
 
