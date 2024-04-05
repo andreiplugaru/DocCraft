@@ -1,4 +1,6 @@
 import { FILE_UPLOAD_URL } from '../config';
+import { PRODUCTION } from '../config';
+
 import './Taskbar.css';
 
 import React, { useState } from 'react';
@@ -14,8 +16,10 @@ export default function Taskbar() {
         if (selectedFile) {
             const formData = new FormData();
             formData.append('file', selectedFile);
-
+          
             console.log('Uploading file:', selectedFile.name);
+            console.log('Production: ', PRODUCTION)
+            console.log('URL: ', FILE_UPLOAD_URL)
 
             fetch(FILE_UPLOAD_URL, {
               method: 'POST',
