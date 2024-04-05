@@ -1,45 +1,35 @@
 import './MainPage.css';
-import Taskbar from '../components/Taskbar';
+import '../components/Taskbar.css';
 import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
+import { parseCredentialsJWT } from '../utils';
 import { LOGIN_URL } from '../config';
 
 export default function MainPage() {
     const responseMessage = (response) => {
-        console.log(response);
-        const credentials = jwtDecode(response.credential);
-        localStorage.setItem("token", response.credential)
-        if (!credentials.email_verified) {
+        const {email_verified} = parseCredentialsJWT(response.credential);
+        
+        if (!email_verified) {
             console.error('Email not verified!');
             return;
         }
 
-        const email = credentials.email;
-        const name = credentials.name;
-        const pfpUrl = credentials.picture;
-        
-        const body = {email, name, pfpUrl};
+        axios.post(LOGIN_URL, null, {withCredentials: true}).catch(error => console.error('Error:', error));
 
-        console.log(body);
-
-        fetch(LOGIN_URL, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).catch(error => console.error(error));
+        document.cookie = 'authToken=' + response.credential;
+        document.location.href = '/home';
     }
 
     const errorMessage = (error) => {
         console.error(error);
     }
     
-
     return (
         <div className="main-page">
-            <Taskbar />
-            <GoogleLogin onSuccess={responseMessage} onError={errorMessage} />
+            <div className="taskbar" style={{justifyContent: 'space-between'}}>
+                <img src='/logo.png' style={{height: '100%'}} alt='Logo' />
+                <GoogleLogin onSuccess={responseMessage} onError={errorMessage} />
+            </div>
         </div>
     );
 }
