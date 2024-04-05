@@ -71,10 +71,6 @@ app.post('/upload', upload.single('file'),  (req, res) => {
   res.status(200).json("ok");
 })});
 
-app.post('/login', (req, res) => {
-  console.log(req.body);
-});
-
 // app.get("/files", async (req, res) => {
 //   const allFiles = await prisma.files.findMany()
 //   res.status(200).json(allFiles);

@@ -2,27 +2,9 @@ import { GET_FILES_URL, GET_FILE_CONTENT, PRODUCTION, UPDATE_FILE_CONTENT } from
 import React, { useState, useEffect, useRef } from 'react';
 import { Slate, Editable, withReact } from 'slate-react';
 import { createEditor, Node, Transforms } from 'slate';
+import { Cookies } from 'react-cookie';
 import './Edit.css'
 import axios from 'axios';
-
-function stringToEditorValue(text) {
-    const editor = withReact(createEditor());
-    const { insertText } = editor;
-    const value = [{ type: 'paragraph', children: [{ text: '' }] }];
-    Transforms.insertNodes(editor, value); // Insert initial paragraph
-
-    const lines = text.split('\n').filter(line => line.trim() !== '');
-    const paragraphChildren = editor.children[0].children;
-
-    lines.forEach((line, index) => {
-        if (index !== 0) {
-            insertText('\n'); // Insert line break
-        }
-        insertText(line);
-    });
-
-    return editor.children;
-}
 
 export default function Edit() {
 
@@ -37,6 +19,9 @@ export default function Edit() {
             <div ref={ref}>{children}</div>
         </Slate>
     ));
+
+    const authToken = new Cookies(document.cookie).get('authToken');
+    console.log(authToken);
     
     useEffect(() => {
         const fetchFiles = async () => {
@@ -57,29 +42,30 @@ export default function Edit() {
         fetchFiles();
 
     }, []);
-    
-    function convertPlainTextToSlateValue(plainText) {
-        const paragraphs = plainText.split('\n').map(text => ({
-            type: 'paragraph',
-            children: [{ text }],
-        }));
-    
-        const slateValue = [
-            {
-                type: 'paragraph',
-                children: paragraphs,
-            },
-        ];
-    
-        return slateValue;
-    }
 
+    function stringToEditorValue(text) {
+        const editor = withReact(createEditor());
+        const { insertText } = editor;
+        const value = [{ type: 'paragraph', children: [{ text: '' }] }];
+        Transforms.insertNodes(editor, value); // Insert initial paragraph
+    
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+        const paragraphChildren = editor.children[0].children;
+    
+        lines.forEach((line, index) => {
+            if (index !== 0) {
+                insertText('\n'); // Insert line break
+            }
+            insertText(line);
+        });
+    
+        return editor.children;
+    }
+    
     const handleEditDocument = () => {
         const fetchContent = async (filename) => {
             try{
                 const response = await axios(`${GET_FILE_CONTENT}/${filename}`);
-                console.log('fisier \n  ')
-                console.log(response.data)
                 return response
             }catch (error) {
                 console.error('Error:', error);
@@ -91,14 +77,7 @@ export default function Edit() {
                 .then(response => {
                     const byteArray = response.data[0].data
                     const stringContent = String.fromCharCode.apply(null, byteArray);
-                    console.log(stringContent)
-                    setEditorValue([
-                        {
-                            type: 'paragraph',
-                            children: [{ text: stringContent }],
-                        },
-                    ]);
-                    stringToEditorValue(stringContent);
+                    setEditorValue(stringToEditorValue(stringContent))
                 })
                 .catch(error => {
                     console.error('Error fetching file content:', error);
@@ -122,7 +101,6 @@ export default function Edit() {
               await axios.post(`${UPDATE_FILE_CONTENT}/${selectedFile}`, {
                 content: text
               });
-              console.log('File saved successfully.');
             } catch (error) {
               console.error('Error saving file:', error);
             }
@@ -176,7 +154,7 @@ export default function Edit() {
                     onChange={newValue => setEditorValue(newValue)}
                     ref={editorRef}
                     >
-                    <Editable autoFocus={false} />
+                    <Editable autoFocus="false"/>
               </SlateWithRef>
 
               
