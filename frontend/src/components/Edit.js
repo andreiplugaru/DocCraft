@@ -1,9 +1,28 @@
 import { GET_FILES_URL, GET_FILE_CONTENT, PRODUCTION, UPDATE_FILE_CONTENT } from '../config';
 import React, { useState, useEffect, useRef } from 'react';
 import { Slate, Editable, withReact } from 'slate-react';
-import { createEditor, Node } from 'slate';
+import { createEditor, Node, Transforms } from 'slate';
 import './Edit.css'
 import axios from 'axios';
+
+function stringToEditorValue(text) {
+    const editor = withReact(createEditor());
+    const { insertText } = editor;
+    const value = [{ type: 'paragraph', children: [{ text: '' }] }];
+    Transforms.insertNodes(editor, value); // Insert initial paragraph
+
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    const paragraphChildren = editor.children[0].children;
+
+    lines.forEach((line, index) => {
+        if (index !== 0) {
+            insertText('\n'); // Insert line break
+        }
+        insertText(line);
+    });
+
+    return editor.children;
+}
 
 export default function Edit() {
 
@@ -79,7 +98,7 @@ export default function Edit() {
                             children: [{ text: stringContent }],
                         },
                     ]);
-                    // setEditorValue(convertPlainTextToSlateValue(stringContent))
+                    stringToEditorValue(stringContent);
                 })
                 .catch(error => {
                     console.error('Error fetching file content:', error);
@@ -157,7 +176,7 @@ export default function Edit() {
                     onChange={newValue => setEditorValue(newValue)}
                     ref={editorRef}
                     >
-                    <Editable />
+                    <Editable autoFocus={false} />
               </SlateWithRef>
 
               

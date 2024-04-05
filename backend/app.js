@@ -75,10 +75,10 @@ app.post('/login', (req, res) => {
   console.log(req.body);
 });
 
-app.get("/files", async (req, res) => {
-  const allFiles = await prisma.files.findMany()
-  res.status(200).json(allFiles);
-});
+// app.get("/files", async (req, res) => {
+//   const allFiles = await prisma.files.findMany()
+//   res.status(200).json(allFiles);
+// });
 
 app.get('/files', async (req, res) => {
   try {
@@ -92,6 +92,7 @@ app.get('/files', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 app.get('/contents/:filename', async (req, res) => {
   const { filename } = req.params;
 
