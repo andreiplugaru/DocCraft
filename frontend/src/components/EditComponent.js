@@ -7,21 +7,18 @@ import { Cookies } from 'react-cookie';
 import { parseCredentialsJWT } from '../utils';
 
 
-export default function EditComponent({editorStringContent, filename}) {
-    const [editor] = useState(() => withReact(createEditor()))
+export default function EditComponent({editorStringContent, filename, setShareable}) {
+    const [editor, setEditor] = useState(() => withReact(createEditor()))
     const editorRef = useRef(null)
 
-    // console.log(editorStringContent);
-
-    let editorValue = editorStringContent ? stringToEditorValue(editorStringContent) : [];
+    let editorValue = editorStringContent != null ? stringToEditorValue(editorStringContent) : [];
 
     function stringToEditorValue(text) {
-        const editor = withReact(createEditor());
         const { insertText } = editor;
         const value = [{ type: 'paragraph', children: [{ text: '' }] }];
         Transforms.insertNodes(editor, value); // Insert initial paragraph
     
-        const lines = text.split('\n').filter(line => line.trim() !== '');
+        const lines = text.split('\n');
     
         lines.forEach((line, index) => {
             if (index !== 0) {
@@ -47,8 +44,12 @@ export default function EditComponent({editorStringContent, filename}) {
         const handleSave = async (event) => {
             if (event.ctrlKey && event.key === 's') {
                 event.preventDefault(); 
+
+                if (setShareable) {
+                    setShareable(true);
+                }
+
                 const text = serializeToString(editorValue);
-                console.log('filename:', filename);
                 try {
                     await axios.post(`${UPDATE_FILE_CONTENT}/${filename}`, {
                         content: text,
@@ -62,10 +63,15 @@ export default function EditComponent({editorStringContent, filename}) {
         document.addEventListener('keydown', handleSave);
 
         return () => document.removeEventListener('keydown', handleSave);
-    }, [editorStringContent, filename]);
+    }, [editorValue, filename]);
+
+    useEffect(() => {
+        setEditor(() => withReact(createEditor()));
+    }, [editorStringContent]);
 
     const editorStyles = {
-        width: '40%', 
+        width: '60%', 
+        marginTop: '10px',
         minHeight: '300px', 
         backgroundColor: '#f4f4f4', 
         color: '#000000',
@@ -74,10 +80,10 @@ export default function EditComponent({editorStringContent, filename}) {
         overflowY: 'auto',
         textAlign: 'left'
     };
-
+console.log(editorValue);
     return (
         <div style={editorValue.length > 0 ? editorStyles : {}}>
-            {editorValue.length > 0 && (
+            {editorValue.length >= 0 && (
                 <SlateWithRef
                     editor={editor}
                     initialValue={editorValue}
@@ -85,7 +91,7 @@ export default function EditComponent({editorStringContent, filename}) {
                     onChange={newValue => editorValue = newValue}
                     ref={editorRef}
                     >
-                    <Editable autoFocus="false"/>
+                    <Editable autoFocus={false} />
                 </SlateWithRef>
             )}
             </div>
