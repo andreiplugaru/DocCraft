@@ -63,8 +63,8 @@ app.post('/login', async (req, res) => {
   const { name, email } = jwtDecode(req.cookies.authToken);
   const date = new Date();
 
-  await prisma.users.findFirst();
-  // await prisma.users.create({data: {email, username: name}});
+  // await prisma.users.findFirst();
+  await prisma.users.create({data: {email, username: name}});
   console.log(date.toString());
 
   res.status(200).json("ok");
