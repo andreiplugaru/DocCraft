@@ -3,7 +3,8 @@ import '../components/Taskbar.css';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { parseCredentialsJWT } from '../utils';
-import { LOGIN_URL } from '../config';
+import { LOGIN_URL, PRODUCTION } from '../config';
+import { Cookies } from 'react-cookie';
 
 export default function MainPage() {
     const responseMessage = (response) => {
@@ -14,10 +15,10 @@ export default function MainPage() {
             return;
         }
 
-        axios.post(LOGIN_URL, null, {withCredentials: true}).catch(error => console.error('Error:', error));
+        axios.post(LOGIN_URL, null, {withCredentials: true, headers: {"Authorization" : `${response.credential}`}}).catch(error => console.error('Error:', error));
+        const cookieValue = 'authToken=' + response.credential + (!PRODUCTION ? '; SameSite=None; Secure' : '');
+        document.cookie = cookieValue
 
-        document.cookie = 'authToken=' + response.credential;
-        document.location.href = '/home';
     }
 
     const errorMessage = (error) => {

@@ -37,7 +37,8 @@ app.use(express.static('public'));
 app.use(cors({
   origin: ['http://localhost:3000', 'https://frontend-dot-cloud-419006.lm.r.appspot.com'],
   optionsSuccessStatus: 200,
-  credentials: true
+  credentials: true,
+  exposedHeaders: ["Set-Cookie"] 
 }));
 
 app.use(cookieParser());
@@ -63,7 +64,8 @@ async function fetchFile(fileName) {
 
 
 app.post('/login', async (req, res) => {
-  const { name, email } = jwtDecode(req.cookies.authToken);
+  console.log(req.headers);
+  const { name, email } = jwtDecode(req.headers.authorization);
   const date = new Date();
 
   const user = await prisma.users.findFirst({where: { email }});
@@ -93,7 +95,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 app.get('/files', async (req, res) => {
   try {
-    const { email } = jwtDecode(req.cookies.authToken);
+    const { email } = jwtDecode(req.headers.authorization);
 
     const user = await prisma.users.findFirst({where: {email}});
 
@@ -117,7 +119,7 @@ app.get('/contents/:filename', async (req, res) => {
   if (!filename) {
     return res.status(400).send('Filename is required.');
   }
-  const { email } = jwtDecode(req.cookies.authToken);
+  const { email } = jwtDecode(req.headers.authorization);
   const owner = await prisma.users.findFirst({ where: { email: email } });
 
   // TODO: verifica permisiunea de write
@@ -153,7 +155,7 @@ app.post('/save/:filename', express.json(), async (req, res) => {
   const { filename } = req.params;
   const { content } = req.body;
 
-  const { email } = jwtDecode(req.cookies.authToken);
+  const { email } = jwtDecode(req.headers.authorization);
 
 
   if (!email) {
@@ -191,7 +193,7 @@ app.post('/save/:filename', express.json(), async (req, res) => {
 
 app.get('/users', async (req, res) => {
   try {
-    const { email } = jwtDecode(req.cookies.authToken);
+    const { email } = jwtDecode(req.headers.authorization);
 
     const emails = (await prisma.users.findMany({where: {NOT: {email}}})).map(user => user.email);
     return res.status(200).json(emails);
@@ -204,7 +206,7 @@ app.get('/users', async (req, res) => {
 app.post('/share', async (req, res) => {
   try {
     const { emailTo, permissionType, filename } = req.body;
-    const { email } = jwtDecode(req.cookies.authToken);
+    const { email } = jwtDecode(req.headers.authorization);
 
     const file = await prisma.files.findFirst({where: {file_name: filename}});
 
